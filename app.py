@@ -1,4 +1,3 @@
-st.session_state
 import streamlit as st
 
 st.title("카운터 앱")
