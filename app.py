@@ -5,86 +5,86 @@ from openai import OpenAI
 ai_client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # 세션 상태
-if "todo_list" not in st.session_state:
-    st.session_state.todo_list = []
+if "book_list" not in st.session_state:
+    st.session_state.book_list = []
 
-if "user_motto" not in st.session_state:
-    st.session_state.user_motto = "오늘도 화이팅!"
-
-
-def add_todo():
-    task = st.session_state.todo_input
-    if task:
-        st.session_state.todo_list.append([task, False])
-        st.toast("할 일이 추가되었습니다!")
-        st.session_state.todo_input = ""
+if "reading_goal" not in st.session_state:
+    st.session_state.reading_goal = "하루 30분 독서하기"
 
 
-# 1. 오늘의 다짐
-def page_motto():
-    st.header("📣 1. 오늘의 다짐")
-
-    motto = st.text_input("나의 한 줄 좌우명을 적어주세요")
-
-    if st.button("다짐 저장"):
-        st.session_state.user_motto = motto
-        st.success("좌우명이 등록되었습니다!")
+def add_book():
+    book = st.session_state.book_input
+    if book:
+        st.session_state.book_list.append([book, False])
+        st.toast("읽을 책이 추가되었습니다!")
+        st.session_state.book_input = ""
 
 
-# 2. 오늘의 할 일
-def page_todo():
-    st.header("✅ 2. 오늘의 할 일")
+# 1. 독서 목표
+def page_goal():
+    st.header("📚 1. 오늘의 독서 목표")
 
-    st.write(f"현재 다짐 : **{st.session_state.user_motto}**")
+    goal = st.text_input("오늘의 독서 목표를 입력하세요")
 
-    st.text_input("추가할 할 일을 입력하세요", key="todo_input")
-    st.button("추가하기", on_click=add_todo)
+    if st.button("목표 저장"):
+        st.session_state.reading_goal = goal
+        st.success("목표가 저장되었습니다!")
+
+
+# 2. 읽을 책
+def page_books():
+    st.header("📖 2. 읽을 책 목록")
+
+    st.write(f"오늘의 목표 : **{st.session_state.reading_goal}**")
+
+    st.text_input("읽을 책을 입력하세요", key="book_input")
+    st.button("추가하기", on_click=add_book)
 
     st.markdown("---")
 
-    for i in range(len(st.session_state.todo_list)):
-        col1, col2, col3 = st.columns([4, 1, 1])
+    for i in range(len(st.session_state.book_list)):
+        col1, col2, col3 = st.columns([4,1,1])
 
         with col1:
-            st.write(f"{i+1}. {st.session_state.todo_list[i][0]}")
+            st.write(f"{i+1}. {st.session_state.book_list[i][0]}")
 
         with col2:
-            if st.button("완료", key=f"btn{i}"):
-                st.session_state.todo_list[i][1] = True
+            if st.button("완독", key=f"finish{i}"):
+                st.session_state.book_list[i][1] = True
                 st.rerun()
 
         with col3:
-            if st.session_state.todo_list[i][1]:
-                st.write("✅ 달성!")
+            if st.session_state.book_list[i][1]:
+                st.write("📕 완료!")
 
 
-# 3. 갓생 지수
+# 3. 독서 달성률
 def page_report():
-    st.header("📈 3. 나의 갓생 지수")
+    st.header("📊 3. 독서 달성률")
 
-    if len(st.session_state.todo_list) == 0:
-        st.write("등록된 할 일이 없습니다.")
+    if len(st.session_state.book_list) == 0:
+        st.write("등록된 책이 없습니다.")
     else:
-        total = len(st.session_state.todo_list)
-        count = sum(item[1] for item in st.session_state.todo_list)
+        total = len(st.session_state.book_list)
+        count = sum(item[1] for item in st.session_state.book_list)
 
         progress = count / total
 
-        st.metric("오늘의 달성률", f"{progress * 100:.1f}%")
+        st.metric("완독률", f"{progress*100:.1f}%")
         st.progress(progress)
 
-        if st.button("기록 전체 초기화"):
-            st.session_state.todo_list = []
+        if st.button("목록 초기화"):
+            st.session_state.book_list = []
             st.rerun()
 
 
-# 4. AI 코칭
+# 4. AI 독서 코칭
 def page_ai_coach():
-    st.header("🤖 AI 코칭")
+    st.header("🤖 AI 독서 코치")
 
-    prompt = st.text_input("질문을 입력하세요")
+    prompt = st.text_input("독서 관련 질문을 입력하세요")
 
-    if st.button("보내기"):
+    if st.button("질문하기"):
         if prompt.strip() == "":
             st.warning("질문을 입력해주세요.")
         else:
@@ -93,21 +93,20 @@ def page_ai_coach():
                     model="gpt-5-mini",
                     input=prompt
                 )
-
                 st.write(response.output_text)
 
             except Exception as e:
-                st.error(f"오류가 발생했습니다.\n\n{e}")
+                st.error(e)
 
 
 # 페이지
 pg = st.navigation([
-    st.Page(page_motto, title="오늘의 다짐", icon="👍"),
-    st.Page(page_todo, title="오늘의 할 일", icon="✅"),
-    st.Page(page_report, title="나의 갓생 지수", icon="📈"),
-    st.Page(page_ai_coach, title="AI 코칭", icon="🤖"),
+    st.Page(page_goal, title="독서 목표", icon="🎯"),
+    st.Page(page_books, title="읽을 책", icon="📚"),
+    st.Page(page_report, title="독서 달성률", icon="📊"),
+    st.Page(page_ai_coach, title="AI 독서 코치", icon="🤖"),
 ], position="top")
 
-st.title("🌱 갓생 살기 플래너")
+st.title("📚 독서 습관 플래너")
 
 pg.run()
