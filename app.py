@@ -43,7 +43,7 @@ def page_todo():
     st.markdown("---")
 
     for i in range(len(st.session_state.todo_list)):
-        col1, col2, col3 = st.columns([4,1,1])
+        col1, col2, col3 = st.columns([4, 1, 1])
 
         with col1:
             st.write(f"{i+1}. {st.session_state.todo_list[i][0]}")
@@ -70,7 +70,7 @@ def page_report():
 
         progress = count / total
 
-        st.metric("오늘의 달성률", f"{progress*100:.1f}%")
+        st.metric("오늘의 달성률", f"{progress * 100:.1f}%")
         st.progress(progress)
 
         if st.button("기록 전체 초기화"):
@@ -85,15 +85,22 @@ def page_ai_coach():
     prompt = st.text_input("질문을 입력하세요")
 
     if st.button("보내기"):
-        response = ai_client.responses.create(
-            model="gpt-5-mini",
-            input=prompt
-        )
+        if prompt.strip() == "":
+            st.warning("질문을 입력해주세요.")
+        else:
+            try:
+                response = ai_client.responses.create(
+                    model="gpt-5-mini",
+                    input=prompt
+                )
 
-        st.write(response.output_text)
+                st.write(response.output_text)
+
+            except Exception as e:
+                st.error(f"오류가 발생했습니다.\n\n{e}")
 
 
-# 페이지 구성
+# 페이지
 pg = st.navigation([
     st.Page(page_motto, title="오늘의 다짐", icon="👍"),
     st.Page(page_todo, title="오늘의 할 일", icon="✅"),
