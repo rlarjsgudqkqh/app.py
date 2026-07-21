@@ -1,7 +1,8 @@
 import streamlit as st
-
 from openai import OpenAI
+
 ai_client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
 if "todo_list" not in st.session_state:
     st.session_state.todo_list = []
 if "user_motto" not in st.session_state:
@@ -33,8 +34,7 @@ def page_todo():
 
     st.write(f"현재 다짐: **{st.session_state.user_motto}**")
 
-    new_todo = st.text_input("추가할 할 일을 입력하세요", key="todo_input")
-
+    st.text_input("추가할 할 일을 입력하세요", key="todo_input")
     st.button("추가하기", on_click=add_todo)
 
     st.markdown("---")
@@ -59,45 +59,3 @@ def page_todo():
 
 def page_report():
     st.header("📈 3. 나의 갓생 지수")
-
-    if not st.session_state.todo_list:
-        st.write("아직 등록된 할 일이 없습니다.")
-    else:
-        total = len(st.session_state.todo_list)
-        count = 0
-
-        for item in st.session_state.todo_list:
-            if item[1]:
-                count += 1
-
-        progress = (count / total) * 100
-
-        st.metric("오늘의 달성률", f"{progress:.1f}%")
-        st.progress(progress / 100)
-
-        if st.button("기록 전체 초기화"):
-            st.session_state.todo_list = []
-            st.rerun()
-
-
-pg = st.navigation([
-    st.Page(page_motto, title="오늘의 다짐", icon="👍"),
-    st.Page(page_todo, title="오늘의 할 일", icon="✅"),
-    st.Page(page_report, title="나의 갓생 지수", icon="📈"),
-], position="top")
-
-st.title("🌱 갓생 살기 플래너")
-
-pg.run()
-def page_ai_coach():
-    st.header("🤖 AI 코치와 대화하기")
-
-    prompt = st.text_input("질문을 입력하세요")
-
-    if st.button("보내기"):
-        response = ai_client.responses.create(
-            model="gpt-5.4-mini",
-            input=prompt
-        )
-
-        st.write(response.output_text)
